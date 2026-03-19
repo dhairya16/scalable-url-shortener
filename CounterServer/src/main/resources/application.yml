@@ -1,0 +1,19 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: counter-server
+
+counter:
+  server-id: ${SERVER_ID:counter-server-1}
+  range-refill-threshold: 10000   # pre-fetch next range when this many are left
+
+range-server:
+  url: ${RANGE_SERVER_URL:http://localhost:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

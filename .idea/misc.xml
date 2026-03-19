@@ -5,6 +5,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/RangeServer/pom.xml" />
+        <option value="$PROJECT_DIR$/CounterServer/pom.xml" />
       </list>
     </option>
   </component>
