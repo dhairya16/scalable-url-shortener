@@ -34,6 +34,7 @@ clickhouse:
   database: ${CLICKHOUSE_DATABASE:analytics}
   username: ${CLICKHOUSE_USER:default}
   password: ${CLICKHOUSE_PASSWORD:clickhouse123}
+  compress: false
 
 app:
   base-url: ${BASE_URL:http://localhost:8080}
