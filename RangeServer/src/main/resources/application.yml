@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: range-server
+
+range:
+  total-sequences: 3500000000000  # 3.5 Trillion (= 62^7)
+  size: 1000000                   # 1 Million per range
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
