@@ -1,0 +1,55 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: url-shortener-service
+
+  # PostgreSQL ? stores URL metadata
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/urlshortener}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres123}
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Redis ? short code ? long URL cache
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis123}
+
+# ClickHouse ? click analytics
+clickhouse:
+  url: ${CLICKHOUSE_URL:http://localhost:8123}
+  database: ${CLICKHOUSE_DATABASE:analytics}
+  username: ${CLICKHOUSE_USER:default}
+  password: ${CLICKHOUSE_PASSWORD:clickhouse123}
+
+app:
+  base-url: ${BASE_URL:http://localhost:8080}
+  url-default-ttl-days: 365
+  counter-server-urls: ${COUNTER_SERVER_URLS:http://localhost:8082}
+
+rate-limit:
+  shorten-rpm: 60
+  redirect-rpm: 300
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.urlshortener: INFO
