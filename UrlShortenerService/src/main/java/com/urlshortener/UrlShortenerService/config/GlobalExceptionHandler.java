@@ -7,6 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.urlshortener.UrlShortenerService.service.UrlShortenerService;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.Map;
@@ -44,5 +46,12 @@ public class GlobalExceptionHandler {
                 "message", message,
                 "timestamp", Instant.now().toString()
         );
+    }
+
+    @ExceptionHandler(UrlShortenerService.ShortCodeConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(
+            UrlShortenerService.ShortCodeConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(errorBody(409, "Conflict", ex.getMessage()));
     }
 }
