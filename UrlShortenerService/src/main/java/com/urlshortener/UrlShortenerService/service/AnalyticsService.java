@@ -1,10 +1,9 @@
 package com.urlshortener.UrlShortenerService.service;
 
-
+import com.urlshortener.UrlShortenerService.dto.ClickEventMessage;
 import com.urlshortener.UrlShortenerService.dto.UrlDtos.AnalyticsResponse;
 import com.urlshortener.UrlShortenerService.dto.UrlDtos.DailyClicks;
 import com.urlshortener.UrlShortenerService.repository.UrlRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -14,8 +13,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,32 +22,24 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AnalyticsService {
 
+    private final ClickEventProducer producer;
     private final Connection clickHouseConnection;
     private final UrlRepository urlRepository;
 
-    private static final DateTimeFormatter DAY_FORMAT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
-
-
     @Async("analyticsExecutor")
-    public void recordClick(String shortCode, String ipAddress, String userAgent, String referer) {
-        String sql = """
-                INSERT INTO click_events (short_code, clicked_at, ip_address, user_agent, referer)
-                VALUES (?, now(), ?, ?, ?)
-                """;
+    public void recordClick(String shortCode, String longUrl,
+                            String ipAddress, String userAgent, String referer) {
+        ClickEventMessage event = ClickEventMessage.builder()
+                .shortCode(shortCode)
+                .longUrl(longUrl)
+                .clickedAt(Instant.now())
+                .ipAddress(ipAddress)
+                .userAgent(userAgent != null ? userAgent : "")
+                .referer(referer != null ? referer : "")
+                .build();
 
-        try (PreparedStatement stmt = clickHouseConnection.prepareStatement(sql)) {
-            stmt.setString(1, shortCode);
-            stmt.setString(2, ipAddress);
-            stmt.setString(3, userAgent != null ? userAgent : "");
-            stmt.setString(4, referer != null ? referer : "");
-            stmt.executeUpdate();
-            log.debug("Recorded click for '{}'", shortCode);
-        } catch (Exception e) {
-            log.warn("Failed to record click for '{}': {}", shortCode, e.getMessage());
-        }
+        producer.publish(event);
     }
-
 
     public Optional<AnalyticsResponse> getAnalytics(String shortCode) {
         return urlRepository.findByShortCode(shortCode)
@@ -71,7 +60,6 @@ public class AnalyticsService {
 
     private long queryTotalClicks(String shortCode) {
         String sql = "SELECT count() FROM click_events WHERE short_code = ?";
-
         try (PreparedStatement stmt = clickHouseConnection.prepareStatement(sql)) {
             stmt.setString(1, shortCode);
             ResultSet rs = stmt.executeQuery();
@@ -85,8 +73,8 @@ public class AnalyticsService {
     private List<DailyClicks> queryDailyClicks(String shortCode) {
         String sql = """
                 SELECT
-                    toDate(clicked_at)  AS day,
-                    count()             AS clicks
+                    toDate(clicked_at) AS day,
+                    count()            AS clicks
                 FROM click_events
                 WHERE short_code = ?
                   AND clicked_at >= now() - INTERVAL 30 DAY
@@ -95,7 +83,6 @@ public class AnalyticsService {
                 """;
 
         List<DailyClicks> result = new ArrayList<>();
-
         try (PreparedStatement stmt = clickHouseConnection.prepareStatement(sql)) {
             stmt.setString(1, shortCode);
             ResultSet rs = stmt.executeQuery();
@@ -108,8 +95,6 @@ public class AnalyticsService {
         } catch (Exception e) {
             log.warn("Failed to query daily clicks for '{}': {}", shortCode, e.getMessage());
         }
-
         return result;
     }
-
 }

@@ -61,8 +61,7 @@ public class UrlShortenerController {
 
         return shortenerService.resolve(shortCode)
                 .<ResponseEntity<?>>map(longUrl -> {
-                    // All values extracted above on main thread — safe to pass to async
-                    analyticsService.recordClick(shortCode, ip, userAgent, referer);
+                    analyticsService.recordClick(shortCode, longUrl, ip, userAgent, referer);
 
                     return ResponseEntity.status(HttpStatus.FOUND)
                             .location(URI.create(longUrl))
