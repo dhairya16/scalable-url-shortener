@@ -1,0 +1,51 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          httpclient:
+            connect-timeout: 3000
+            response-timeout: 10
+          routes:
+            # ?? URL Management ??????????????????????????????????????
+            - id: url-shortener-service
+              uri: http://localhost:8085
+              predicates:
+                - Path=/shorten
+                - Method=POST
+
+            - id: url-shortener-service-delete
+              uri: http://localhost:8085
+              predicates:
+                - Path=/{shortCode}
+                - Method=DELETE
+
+            # ?? URL Redirect ????????????????????????????????????????
+            - id: url-redirect-service
+              uri: http://localhost:8086
+              predicates:
+                - Path=/{shortCode}
+                - Method=GET
+
+            # ?? Analytics (placeholder) ?????????????????????????????
+            - id: analytics-service
+              uri: http://localhost:8087
+              predicates:
+                - Path=/analytics/**
+                - Method=GET
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

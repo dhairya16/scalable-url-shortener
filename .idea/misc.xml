@@ -8,6 +8,7 @@
         <option value="$PROJECT_DIR$/CounterServer/pom.xml" />
         <option value="$PROJECT_DIR$/UrlShortenerService/pom.xml" />
         <option value="$PROJECT_DIR$/AnalyticsConsumer/pom.xml" />
+        <option value="$PROJECT_DIR$/APIGateway/pom.xml" />
       </list>
     </option>
   </component>
