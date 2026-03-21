@@ -2,7 +2,6 @@ package com.urlshortener.UrlShortenerService.controller;
 
 import com.urlshortener.UrlShortenerService.dto.UrlDtos.ShortenRequest;
 import com.urlshortener.UrlShortenerService.dto.UrlDtos.ShortenResponse;
-import com.urlshortener.UrlShortenerService.service.AnalyticsService;
 import com.urlshortener.UrlShortenerService.service.RateLimiter;
 import com.urlshortener.UrlShortenerService.service.UrlShortenerService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +22,6 @@ import java.util.Map;
 public class UrlShortenerController {
 
     private final UrlShortenerService shortenerService;
-    private final AnalyticsService analyticsService;
     private final RateLimiter rateLimiter;
 
     @PostMapping("/shorten")
@@ -42,43 +40,6 @@ public class UrlShortenerController {
 
         ShortenResponse response = shortenerService.shorten(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @GetMapping("/{shortCode}")
-    public ResponseEntity<?> redirect(
-            @PathVariable String shortCode,
-            HttpServletRequest httpRequest) {
-
-        String ip = extractIp(httpRequest);
-        String userAgent = httpRequest.getHeader("User-Agent");
-        String referer = httpRequest.getHeader("Referer");
-
-        if (!rateLimiter.allowRedirect(ip)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body(errorBody(429, "Too Many Requests",
-                            "Redirect rate limit exceeded."));
-        }
-
-        return shortenerService.resolve(shortCode)
-                .<ResponseEntity<?>>map(longUrl -> {
-                    analyticsService.recordClick(shortCode, longUrl, ip, userAgent, referer);
-
-                    return ResponseEntity.status(HttpStatus.FOUND)
-                            .location(URI.create(longUrl))
-                            .build();
-                })
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(errorBody(404, "Not Found",
-                                "Short code '" + shortCode + "' does not exist or has expired")));
-    }
-
-    @GetMapping("/analytics/{shortCode}")
-    public ResponseEntity<?> analytics(@PathVariable String shortCode) {
-        return analyticsService.getAnalytics(shortCode)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(errorBody(404, "Not Found",
-                                "Short code '" + shortCode + "' does not exist")));
     }
 
     @DeleteMapping("/{shortCode}")

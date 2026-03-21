@@ -28,25 +28,9 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:redis123}
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
-
   jackson:
     serialization:
       write-dates-as-timestamps: false
-
-# ClickHouse ? click analytics
-clickhouse:
-  url: ${CLICKHOUSE_URL:http://localhost:8123}
-  database: ${CLICKHOUSE_DATABASE:analytics}
-  username: ${CLICKHOUSE_USER:default}
-  password: ${CLICKHOUSE_PASSWORD:clickhouse123}
-  compress: false
 
 app:
   base-url: ${BASE_URL:http://localhost:8080}

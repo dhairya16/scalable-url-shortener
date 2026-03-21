@@ -1,4 +1,4 @@
-package com.urlshortener.UrlShortenerService.config;
+package com.urlshortener.UrlRedirectService.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

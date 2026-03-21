@@ -1,4 +1,4 @@
-package com.urlshortener.UrlShortenerService.dto;
+package com.urlshortener.UrlRedirectService.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
