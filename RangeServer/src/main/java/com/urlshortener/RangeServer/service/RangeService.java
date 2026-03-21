@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -30,14 +31,28 @@ public class RangeService {
     }
 
     public synchronized RangeAssignment assignRange(String serverId) {
-        long start = nextRangeStart.get();
+        // Check if this server already has an active range
+        // Re-assign it instead of giving a new one
+        Optional<RangeAssignment> existing = assignments.values().stream()
+                .filter(a -> a.getAssignedTo().equals(serverId))
+                .findFirst();
 
+        if (existing.isPresent()) {
+            log.info("Re-assigning existing range [{}, {}) to recovering server '{}'",
+                    existing.get().getRangeStart(),
+                    existing.get().getRangeEnd(),
+                    serverId);
+            return existing.get();
+        }
+
+        // No existing range — assign a new one
+        long start = nextRangeStart.get();
         if (start >= totalSequences) {
             throw new RangesExhaustedException("All sequence ranges are exhausted");
         }
 
         long end = Math.min(start + rangeSize, totalSequences);
-        nextRangeStart.set(end);  // advance the pointer
+        nextRangeStart.set(end);
 
         RangeAssignment assignment = RangeAssignment.builder()
                 .rangeStart(start)
@@ -47,7 +62,7 @@ public class RangeService {
                 .build();
 
         assignments.put(start, assignment);
-        log.info("Assigned [{}, {}) to '{}' — total issued: {}",
+        log.info("Assigned new range [{}, {}) to server '{}' — total issued: {}",
                 start, end, serverId, assignments.size());
 
         return assignment;
