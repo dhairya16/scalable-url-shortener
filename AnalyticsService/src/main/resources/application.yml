@@ -14,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate        # never modify schema ? read only service
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
