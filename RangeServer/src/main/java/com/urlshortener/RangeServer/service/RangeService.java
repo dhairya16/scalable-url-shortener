@@ -72,6 +72,10 @@ public class RangeService {
         return Map.copyOf(assignments);
     }
 
+    public double getUtilizationPct() {
+        return (double) nextRangeStart.get() / totalSequences * 100;
+    }
+
     public long getRangesIssued() {
         return assignments.size();
     }
@@ -83,6 +87,7 @@ public class RangeService {
     public long getNextRangeStart() {
         return nextRangeStart.get();
     }
+
 
     public static class RangesExhaustedException extends RuntimeException {
         public RangesExhaustedException(String msg) {

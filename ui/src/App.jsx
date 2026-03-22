@@ -33,7 +33,8 @@ export default function App() {
             fontFamily: 'var(--font-sans)',
           }}
         >
-          snip · self-hosted URL shortener · built with Spring Boot + React
+          shortly · self-hosted URL shortener · built with Spring Boot + React
+          by Dhairya Savlekar
         </footer>
       </div>
     </BrowserRouter>
