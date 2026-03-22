@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Link2,
@@ -9,7 +9,7 @@ import {
   Search,
   Clock,
 } from 'lucide-react'
-import { deactivateUrl } from '../lib/api'
+import { deactivateUrl, checkUrl } from '../lib/api'
 import { useUrlHistory } from '../hooks/useUrlHistory'
 import { Button, Card, Empty, Toast } from '../components/ui'
 
@@ -42,6 +42,22 @@ export default function MyUrls() {
   const [deletingId, setDeletingId] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [toast, setToast] = useState(null)
+
+  useEffect(() => {
+    const validateUrls = async () => {
+      for (const url of urls) {
+        try {
+          await checkUrl(url.shortCode)
+        } catch (err) {
+          if (err.response?.status === 404) {
+            // URL no longer exists on backend — remove from local list
+            removeUrl(url.shortCode)
+          }
+        }
+      }
+    }
+    if (urls.length > 0) validateUrls()
+  }, [])
 
   const filtered = urls.filter(
     (u) =>

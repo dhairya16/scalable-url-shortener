@@ -140,6 +140,16 @@ services:
     networks:
       - urlshortener-net
 
+  ui:
+    build: ./ui
+    container_name: ui
+    ports:
+      - "3001:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - urlshortener-net
+
 networks:
   urlshortener-net:
     external: true
